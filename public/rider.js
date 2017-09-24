@@ -4,9 +4,8 @@ var markers = [];
 var map;
 var geocoder;
 var pudoPoints = [{}];
-var possibleRoutes =
-[[{lat: 49.283143, lng: -123.115088}, {lat: 51.283143, lng: -133.115088}, {lat: 64.283143, lng: -126.115088}, {lat: 47.283143, lng: -129.115088}],
-[{lat: 49.503143, lng: -123.415088}, {lat: 51.883143, lng: -133.215088}, {lat: 63.283143, lng: -126.715088}, {lat: 48.283143, lng: -129.145088}]]; // list of routes
+var possibleRoutes = [[]];
+var drawnRoutes = [];
 var selectedRoute = [];
 
 function initAutocomplete() {
@@ -16,9 +15,6 @@ function initAutocomplete() {
         zoom: 17,
         center: bcit
     });
-
-    var directionsService = new google.maps.DirectionsService;
-    var directionsDisplay = new google.maps.DirectionsRenderer;
 
     geocoder = new google.maps.Geocoder;
 
@@ -35,10 +31,8 @@ function initAutocomplete() {
     autocompleteDes.addListener('place_changed', fillInAddressDes);
 
     // route plotting
-    directionsDisplay.setMap(map);
-
     document.getElementById('find_driver_btn').addEventListener('click', function() {
-      displayPossibleRoutes(directionsService, directionsDisplay);
+      displayPossibleRoutes();
     });
 }
 
@@ -154,14 +148,23 @@ function sendPoints() {
 
   // TODO: request server to receive route and waypoints
     pudoPoints = [[]];
-    possibleRoutes = [[]];
+    possibleRoutes =
+    [[{lat: 49.2834511, lng: -123.1174435}, {lat: 49.2814521, lng: -123.1155755}, {lat: 49.2837886, lng: -123.116005}, {lat: 49.2803221, lng: -123.112195}],
+    [{lat: 49.2834511, lng: -123.1174435}, {lat: 49.28112, lng: -123.1140618}, {lat: 49.2803221, lng: -123.112195}, {lat: 49.2778357, lng: -123.1088233}]];
+
 }
 
 // route plotting
-function displayPossibleRoutes(directionsService, directionsDisplay) {
+function displayPossibleRoutes() {
+  var directionsService;
+  var directionsDisplay;
 
   for (var i = 0; i < possibleRoutes.length; i++) {
-    // TODO: plot all possible routes
+    directionsService = new google.maps.DirectionsService();
+    directionsDisplay = new google.maps.DirectionsRenderer();
+    directionsDisplay.setMap(map);
+
+    // plot all possible routes
     var waypts = [];
     possibleRoutes[i].slice(1, possibleRoutes[i].length-1).forEach(function(latlng) {
       waypts.push({
@@ -169,7 +172,7 @@ function displayPossibleRoutes(directionsService, directionsDisplay) {
         stopover: true
       });
     });
-    console.log("i: " + i + ", lat: ");
+    console.log("i: " + i + ", lat: " + possibleRoutes[i][0].lat + ", lng: " + possibleRoutes[i][0].lng);
     directionsService.route({
       origin: new google.maps.LatLng(possibleRoutes[i][0].lat, possibleRoutes[i][0].lng),
       destination: new google.maps.LatLng(possibleRoutes[i][possibleRoutes[i].length-1].lat, possibleRoutes[i][possibleRoutes[i].length-1].lng),
