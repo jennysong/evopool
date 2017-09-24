@@ -3,14 +3,22 @@ var autocompletePu, autocompleteDes;
 var markers = [];
 var map;
 var geocoder;
+var pudoPoints = [{}];
+var possibleRoutes =
+[[{lat: 49.283143, lng: -123.115088}, {lat: 51.283143, lng: -133.115088}, {lat: 64.283143, lng: -126.115088}, {lat: 47.283143, lng: -129.115088}],
+[{lat: 49.503143, lng: -123.415088}, {lat: 51.883143, lng: -133.215088}, {lat: 63.283143, lng: -126.715088}, {lat: 48.283143, lng: -129.145088}]]; // list of routes
+var selectedRoute = [];
 
 function initAutocomplete() {
 
-    var uluru = {lat: 49.2577143, lng: -123.1939434};
+    var bcit = {lat: 49.283143, lng: -123.115088};
     map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 11,
-        center: uluru
+        zoom: 17,
+        center: bcit
     });
+
+    var directionsService = new google.maps.DirectionsService;
+    var directionsDisplay = new google.maps.DirectionsRenderer;
 
     geocoder = new google.maps.Geocoder;
 
@@ -25,6 +33,13 @@ function initAutocomplete() {
         {types: ['geocode']});
 
     autocompleteDes.addListener('place_changed', fillInAddressDes);
+
+    // route plotting
+    directionsDisplay.setMap(map);
+
+    document.getElementById('find_driver_btn').addEventListener('click', function() {
+      displayPossibleRoutes(directionsService, directionsDisplay);
+    });
 }
 
 function fillInAddressPu() {
@@ -131,8 +146,54 @@ function setAddress(latlng, type) {
 
 
 function sendPoints() {
+  // TODO: send these points to the server
     console.log(markers[0].getPosition().lat() + " , " + markers[0].getPosition().lng());
     console.log(markers[1].getPosition().lat() + " , " + markers[1].getPosition().lng());
     console.log(document.getElementById('time').value);
     console.log(document.getElementById('radius').value);
+
+  // TODO: request server to receive route and waypoints
+    pudoPoints = [[]];
+    possibleRoutes = [[]];
+}
+
+// route plotting
+function displayPossibleRoutes(directionsService, directionsDisplay) {
+
+  for (var i = 0; i < possibleRoutes.length; i++) {
+    // TODO: plot all possible routes
+    var waypts = [];
+    possibleRoutes[i].slice(1, possibleRoutes[i].length-1).forEach(function(latlng) {
+      waypts.push({
+        location: new google.maps.LatLng(latlng.lat, latlng.lng),
+        stopover: true
+      });
+    });
+    console.log("i: " + i + ", lat: ");
+    directionsService.route({
+      origin: new google.maps.LatLng(possibleRoutes[i][0].lat, possibleRoutes[i][0].lng),
+      destination: new google.maps.LatLng(possibleRoutes[i][possibleRoutes[i].length-1].lat, possibleRoutes[i][possibleRoutes[i].length-1].lng),
+      waypoints: waypts,
+      optimizeWaypoints: true,
+      travelMode: 'DRIVING'
+    }, function(response, status) {
+      if (status === 'OK') {
+        directionsDisplay.setDirections(response);
+        var route = response.routes[0];
+        var summaryPanel = document.getElementById('directions-panel');
+        summaryPanel.innerHTML = '';
+        // For each route, display summary information.
+        for (var i = 0; i < route.legs.length; i++) {
+          var routeSegment = i + 1;
+          summaryPanel.innerHTML += '<b>Route Segment: ' + routeSegment +
+              '</b><br>';
+          summaryPanel.innerHTML += route.legs[i].start_address + ' to ';
+          summaryPanel.innerHTML += route.legs[i].end_address + '<br>';
+          summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>';
+        }
+      } else {
+        window.alert('Directions request failed due to ' + status);
+      }
+    });
+  }
 }
