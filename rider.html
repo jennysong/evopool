@@ -5,60 +5,70 @@
     <title>Evopool</title>
     <style>
         #map {
-            width: 100%;
+            width: 80%;
             height: 400px;
         }
     </style>
-    <script src="rider.js"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>    <script src="rider.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7YypByxy6nty8uskgT67k_QKoAsmiGes&libraries=places&callback=initAutocomplete"
             async defer></script>
     <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500">
 </head>
 
-<h1>Driver Page</h1>
+<h1>Rider's Page</h1>
 
 <body>
-    <p>This is drivers' page</p>
+    <p>This is rider's page</p>
     <h2>My Google Maps Demo</h2>
 
     <h3></h3>
 
-    <div id="locationField">
-        <p>Pick up:</p>
-        <p>
-            <input id="autocompletePu" placeholder="Enter your address"
-                   onFocus="geolocate('pu')" type="text">
-            <button onclick="clickPoint('pu')">Click on map</button>
-            <button onclick="resetPoint('pu')">Reset</button>
-        </p>
-    </div>
-    <div id="locationField2">
-        <p>Destination:</p>
-        <p>
-            <input id="autocompleteDes" placeholder="Enter your address"
-                   onFocus="geolocate('des')" type="text">
-            <button onclick="clickPoint('des')">Click on map</button>
-            <button onclick="resetPoint('des')">Reset</button>
-        </p>
-    </div>
-    <div>
-        <p>Time of departure:</p>
-        <p>
-            <input id="time" type="time" name="time">
-        </p>
-    </div>
-    <div>
-        <p>Radius (meters)</p>
-        <p>
-            <input id="radius" type="text" name="radius">
-        </p>
-    </div>
+      <div class="left-panel">
+        <div id="locationField">
+            <p>Pick up:</p>
+            <p>
+                <input id="autocompletePu" placeholder="Enter your address"
+                       onFocus="geolocate('pu')" type="text">
+                <button onclick="clickPoint('pu')">Click on map</button>
+                <button onclick="resetPoint('pu')">Reset</button>
+            </p>
+        </div>
+        <div id="locationField2">
+            <p>Destination:</p>
+            <p>
+                <input id="autocompleteDes" placeholder="Enter your address"
+                       onFocus="geolocate('des')" type="text">
+                <button onclick="clickPoint('des')">Click on map</button>
+                <button onclick="resetPoint('des')">Reset</button>
+            </p>
+        </div>
+        <div>
+            <p>Time of departure:</p>
+            <p>
+                <input id="time" type="time" name="time">
+            </p>
+        </div>
+        <div>
+            <p>Radius (meters)</p>
+            <p>
+                <input id="radius" type="text" name="radius">
+            </p>
+        </div>
 
-    <div id="floating-panel">
-        <button onclick="sendPoints();">Find Drivers!</button>
-    </div>
-
-    <div id="map"></div>
+        <div id="floating-panel">
+            <button onclick="sendPoints();">Find Drivers!</button>
+        </div>
+      </div>
+      <div class="map">
+        <div id="map"></div>
+      </div>
 </body>
 
 </html>
