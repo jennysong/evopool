@@ -9,6 +9,9 @@
             height: 400px;
         }
     </style>
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
@@ -71,6 +74,36 @@
         <div id="directions-panel"></div>
         <div id="routes"/>
       </div>
+
+      <div id="tablePrint"></div>
+
+
+    <!-- Trigger the modal with a button -->
+    <!--<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Modal</button>-->
+
+    <!-- Modal -->
+    <div id="myModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Reserved!</h4>
+                </div>
+                <div style="margin: auto; display: block; text-align: center;" class="modal-body">
+                    <p style="horizontal-align:center; font-size: 54px;">congratulations! You just saved..</p> <br>
+                    <p style="horizontal-align:center; font-size: 68px;" id="carbon-emission"></p>
+                    <img src="carbon_emission.png" height="500" width="500">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 </body>
 
 </html>

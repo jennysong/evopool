@@ -5,11 +5,12 @@ var map;
 var geocoder;
 var possibleRoutes = [[]];
 var drawnRoutes = [];
-var selectedRoute = [];
+var selectedRoute;
 var DirectionsService;
 var routes = [];
 var routeStats = [];
 var DirectionsService, latest_renderer;
+var CARBON_EMISSION_RATE = 0.11;
 
 function initAutocomplete() {
 
@@ -182,6 +183,8 @@ function sendPoints() {
           routeStats[i] = {};
           routeStats[i].id = route.id;
           routeStats[i].origin = new google.maps.LatLng(markers[0].getPosition().lat(), markers[0].getPosition().lng());
+          routeStats[i].origin_stop_id = route.origin_stop_id;
+          routeStats[i].destination_stop_id = route.destination_stop_id;
           routeStats[i].destination = new google.maps.LatLng(markers[1].getPosition().lat(), markers[1].getPosition().lng());
           routeStats[i].waypoints = [];
           routeStats[i].waypoints.push({location: new google.maps.LatLng(route.origin_stop[0], route.origin_stop[1]), stopover:false});
@@ -222,6 +225,8 @@ function sendPoints() {
                       dur += response3.routes[0].legs[0].duration.value;
                       routeStats[i].distance = dist;
                       routeStats[i].duration = dur;
+                      sortByDuration(routeStats);
+                      createTable();
                     }
                   });
                 }
@@ -231,7 +236,62 @@ function sendPoints() {
         }); // routes
 
         console.log(routeStats);
+        // createTable();
 
       }
     };
+}
+
+function sortByDuration(RouteStats) {
+    RouteStats.forEach(function(route) {
+        RouteStats.sort(function(a, b) {
+            return a.duration - b.duration;
+        })
+    })
+}
+
+function createTable() {
+
+    var myTable= "<table class=\"table table-striped\"><tr><td style='width: 100px; color: red;'>Routes</td>";
+    myTable+= "<td style='width: 100px; color: red; text-align: right;'>Travel Time</td>";
+    myTable+="<td style='width: 100px; color: red; text-align: right;'>Total Distance</td>";
+    myTable+="<td style='width: 100px; color: red; text-align: right;'>Reserve</td></tr>";
+
+    for (var i=0; i<routeStats.length; i++) {
+        myTable+="<tr><td style='width: 100px;'>Option " + (i+1) + "</td>";
+        myTable+="<td style='width: 100px; text-align: right;'>" + Math.round(routeStats[i].duration*100/60)/100 + " mins</td>";
+        myTable+="<td style='width: 100px; text-align: right;'>" + Math.round(routeStats[i].distance*100/1000)/100 + " km</td>";
+        myTable+="<td style='width: 100px; text-align: right;'><div id=\"floating-panel\"><button data-toggle=\"modal\" data-target=\"#myModal\" id=" + routeStats[i].id + " onclick=\"reserve(this.id);\">Reserve!</button>" + "</div></td></tr>";
+    }
+    myTable+="</table>";
+
+    // document.write( myTable);
+    document.getElementById('tablePrint').innerHTML = myTable;
+}
+
+function reserve(routeId) {
+    var route = routeStats.filter(function(r) {
+        if (r.id == routeId) return r;
+    })[0];
+
+    var carbon_emission = Math.round(route.distance * CARBON_EMISSION_RATE * 100 / 1000) / 100;
+
+    document.getElementById('carbon-emission').innerText = carbon_emission + " L of CO2!";
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("POST", "http://evopool-backend.staging.inputhealth.flynnhosting.net/api/riders/rides", true);
+    xhttp.setRequestHeader("Content-type", "application/json");
+    var req = {"trip_id" : route.id, "origin_stop_id" : route.origin_stop_id, "destination_stop_id" : route.destination_stop_id};
+    // console.log(JSON.stringify(req));
+    xhttp.send(JSON.stringify(req));
+    xhttp.onreadystatechange = function () {
+        if(xhttp.readyState === XMLHttpRequest.DONE && xhttp.status === 200) {
+            // JSON.parse(xhttp.responseText).forEach(function (obj) {
+            //     routes.push(obj);
+            // });
+            // if (routes.length == 0) alert('nothing to show')
+            console.log(JSON.parse(xhttp.responseText));
+
+        }
+    }
 }
