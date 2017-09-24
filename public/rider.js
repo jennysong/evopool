@@ -8,10 +8,12 @@ var drawnRoutes = [];
 var selectedRoute = [];
 var directionsService;
 var routes = [];
+var service, latest_renderer;
 
 function initAutocomplete() {
 
-    var nvan = {lat: 49.3303779, lng: -123.0638917};
+    service = new google.maps.DirectionsService();
+    var nvan = {lat: 49.273376, lng: -123.103834};
     map = new google.maps.Map(document.getElementById('map'), {
         zoom: 14,
         center: nvan
@@ -31,12 +33,24 @@ function initAutocomplete() {
 
     autocompleteDes.addListener('place_changed', fillInAddressDes);
 
-    // // route plotting
-    // document.getElementById('find_driver_btn').addEventListener('click', function() {
-    //   displayPossibleRoutes();
-    // });
+    // route plotting
+}
 
-    // directionsService = new google.maps.DirectionsService();
+var render_direction = function(direction_result) {
+  renderer = new google.maps.DirectionsRenderer();
+  renderer.setMap(map);
+  renderer.setDirections(direction_result);
+  return renderer;
+}
+
+var render_direction_from_attrs = function(attrs, callback) {
+  origin = new google.maps.LatLng(attrs.start.lat, attrs.start.lng)
+  destination = new google.maps.LatLng(attrs.end.lat, attrs.end.lng)
+  waypoints = attrs.waypoints.map(function(lat_lng) { return {location: new google.maps.LatLng(lat_lng[0], lat_lng[1]), stopover:false} })
+
+  service.route({ origin: origin, destination:  destination, waypoints: waypoints, 'travelMode': google.maps.DirectionsTravelMode.DRIVING},function(res,sts) {
+    if(callback instanceof Function) callback(res);
+  })
 }
 
 function fillInAddressPu() {
@@ -143,12 +157,7 @@ function setAddress(latlng, type) {
 
 
 function sendPoints() {
-  // send these points to the server
-    console.log(markers[0].getPosition().lat() + " , " + markers[0].getPosition().lng());
-    console.log(markers[1].getPosition().lat() + " , " + markers[1].getPosition().lng());
-    console.log(document.getElementById('time').value);
-    console.log(document.getElementById('radius').value);
-
+  // send points to the server
     var xhttp = new XMLHttpRequest();
     xhttp.open("POST", "http://evopool-backend.staging.inputhealth.flynnhosting.net/api/riders/trips/search", true);
     xhttp.setRequestHeader("Content-type", "application/json");
@@ -160,6 +169,12 @@ function sendPoints() {
         JSON.parse(xhttp.responseText).forEach(function(obj) {
             routes.push(obj);
         });
+        if(routes.length == 0) alert('nothing to show')
+        routes.forEach(function(trip_attrs) {
+          render_direction_from_attrs(trip_attrs.directions, function(result) {
+            latest_renderer = render_direction(result);
+          });
+        })
       }
     };
 }
