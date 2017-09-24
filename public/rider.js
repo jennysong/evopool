@@ -7,6 +7,8 @@ var pudoPoints = [{}];
 var possibleRoutes = [[]];
 var drawnRoutes = [];
 var selectedRoute = [];
+var directionsService;
+var routes = [];
 
 function initAutocomplete() {
 
@@ -30,10 +32,12 @@ function initAutocomplete() {
 
     autocompleteDes.addListener('place_changed', fillInAddressDes);
 
-    // route plotting
-    document.getElementById('find_driver_btn').addEventListener('click', function() {
-      displayPossibleRoutes();
-    });
+    // // route plotting
+    // document.getElementById('find_driver_btn').addEventListener('click', function() {
+    //   displayPossibleRoutes();
+    // });
+
+    // directionsService = new google.maps.DirectionsService();
 }
 
 function fillInAddressPu() {
@@ -146,57 +150,104 @@ function sendPoints() {
     console.log(document.getElementById('time').value);
     console.log(document.getElementById('radius').value);
 
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("POST", "http://evopool-backend.staging.inputhealth.flynnhosting.net/api/riders/trips/search", true);
+    xhttp.setRequestHeader("Content-type", "application/json");
+    var req = {"start_at" : document.getElementById('time').value.toString(), "from" : {"lat" : markers[0].getPosition().lat(), "lng" : markers[0].getPosition().lng()}, "to" : {"lat" : markers[1].getPosition().lat(), "lng" : markers[1].getPosition().lng()}};
+    // console.log(JSON.stringify(req));
+    xhttp.send(JSON.stringify(req));
+    // var response = JSON.parse(xhttp.responseText);
+    var response = xhttp.responseText;
+    // console.log(xhttp.responseText);
+
   // TODO: request server to receive route and waypoints
-    pudoPoints = [[]];
-    possibleRoutes =
-    [[{lat: 49.2834511, lng: -123.1174435}, {lat: 49.2814521, lng: -123.1155755}, {lat: 49.2837886, lng: -123.116005}, {lat: 49.2803221, lng: -123.112195}],
-    [{lat: 49.2834511, lng: -123.1174435}, {lat: 49.28112, lng: -123.1140618}, {lat: 49.2803221, lng: -123.112195}, {lat: 49.2778357, lng: -123.1088233}]];
+    // possibleRoutes =
+    // [[{lat: 49.2834511, lng: -123.1174435}, {lat: 50.2814521, lng: -123.1155755}, {lat: 51.2837886, lng: -123.116005}, {lat: 53.2803221, lng: -123.112195}],
+    // [{lat: 50.2834511, lng: -122.1174435}, {lat: 48.28112, lng: -124.1140618}, {lat: 47.2803221, lng: -121.112195}, {lat: 51.2778357, lng: -125.1088233}]];
+    // console.log(JSON.parse(response));
 
 }
 
-// route plotting
-function displayPossibleRoutes() {
-  var directionsService;
-  var directionsDisplay;
 
-  for (var i = 0; i < possibleRoutes.length; i++) {
-    directionsService = new google.maps.DirectionsService();
-    directionsDisplay = new google.maps.DirectionsRenderer();
-    directionsDisplay.setMap(map);
 
-    // plot all possible routes
-    var waypts = [];
-    possibleRoutes[i].slice(1, possibleRoutes[i].length-1).forEach(function(latlng) {
-      waypts.push({
-        location: new google.maps.LatLng(latlng.lat, latlng.lng),
-        stopover: true
-      });
-    });
-    console.log("i: " + i + ", lat: " + possibleRoutes[i][0].lat + ", lng: " + possibleRoutes[i][0].lng);
-    directionsService.route({
-      origin: new google.maps.LatLng(possibleRoutes[i][0].lat, possibleRoutes[i][0].lng),
-      destination: new google.maps.LatLng(possibleRoutes[i][possibleRoutes[i].length-1].lat, possibleRoutes[i][possibleRoutes[i].length-1].lng),
-      waypoints: waypts,
-      optimizeWaypoints: true,
-      travelMode: 'DRIVING'
-    }, function(response, status) {
-      if (status === 'OK') {
-        directionsDisplay.setDirections(response);
-        var route = response.routes[0];
-        var summaryPanel = document.getElementById('directions-panel');
-        summaryPanel.innerHTML = '';
-        // For each route, display summary information.
-        for (var i = 0; i < route.legs.length; i++) {
-          var routeSegment = i + 1;
-          summaryPanel.innerHTML += '<b>Route Segment: ' + routeSegment +
-              '</b><br>';
-          summaryPanel.innerHTML += route.legs[i].start_address + ' to ';
-          summaryPanel.innerHTML += route.legs[i].end_address + '<br>';
-          summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>';
-        }
-      } else {
-        window.alert('Directions request failed due to ' + status);
-      }
-    });
-  }
-}
+
+
+// var render_direction = function(direction_result) {
+//     renderer = new google.maps.DirectionsRenderer( {'draggable':true} );
+//     renderer.setMap(map);
+//     renderer.setDirections(direction_result);
+//     return renderer;
+// }
+
+// // route plotting
+// function displayPossibleRoutes() {
+//   // var directionsService;
+//   var directionsDisplay;
+//
+//   for (var i = 0; i < possibleRoutes.length; i++) {
+//     // directionsService = new google.maps.DirectionsService();
+//     directionsDisplay = new google.maps.DirectionsRenderer();
+//     directionsDisplay.setMap(map);
+//
+//     // plot all possible routes
+//     var waypts = [];
+//     possibleRoutes[i].slice(1, possibleRoutes[i].length-1).forEach(function(latlng) {
+//       waypts.push({
+//         location: new google.maps.LatLng(latlng.lat, latlng.lng),
+//         stopover: true
+//       });
+//     });
+//
+//     // for (var i=0; i<waypts.length; i++)
+//     //     console.log(waypts[i].location.lat());
+//       // console.log(possibleRoutes[i].length);
+//     // console.log("i: " + i + ", lat: " + possibleRoutes[i][0].lat + ", lng: " + possibleRoutes[i][0].lng);
+//
+//
+//       origin = new google.maps.LatLng(possibleRoutes[i][0].lat, possibleRoutes[i][0].lng);
+//       destination = new google.maps.LatLng(possibleRoutes[i][possibleRoutes[i].length-1].lat, possibleRoutes[i][possibleRoutes[i].length-1].lng);
+//
+//       console.log(possibleRoutes.length + " i: " + i + ", " + origin + " " + destination);
+//
+//       directionsService.route({ origin: origin, destination:  destination, waypoints: waypts, 'travelMode': google.maps.DirectionsTravelMode.DRIVING},function(res,sts) {
+//           renderer = new google.maps.DirectionsRenderer( {'draggable':true} );
+//           renderer.setMap(map);
+//           renderer.setDirections(res);
+//           console.log("i: " + i + ", " + origin + " " + destination);
+//       })
+//
+//
+//
+//
+//     // directionsService.route({
+//     //   origin: new google.maps.LatLng(possibleRoutes[i][0].lat, possibleRoutes[i][0].lng),
+//     //   destination: new google.maps.LatLng(possibleRoutes[i][possibleRoutes[i].length-1].lat, possibleRoutes[i][possibleRoutes[i].length-1].lng),
+//     //   waypoints: waypts,
+//     //   optimizeWaypoints: true,
+//     //   'travelMode': 'DRIVING'
+//     // }, function(response, status) {
+//     //   if (status === 'OK') {
+//     //     directionsDisplay.setDirections(response);
+//     //     // var route = response.routes[0];
+//     //     // var summaryPanel = document.getElementById('directions-panel');
+//     //     // summaryPanel.innerHTML = '';
+//     //     // For each route, display summary information.
+//     //     // for (var i = 0; i < route.legs.length; i++) {
+//     //     //   var routeSegment = i + 1;
+//     //     //   summaryPanel.innerHTML += '<b>Route Segment: ' + routeSegment +
+//     //     //       '</b><br>';
+//     //     //   summaryPanel.innerHTML += route.legs[i].start_address + ' to ';
+//     //     //   summaryPanel.innerHTML += route.legs[i].end_address + '<br>';
+//     //     //   summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>';
+//     //     // }
+//     //   } else {
+//     //     window.alert('Directions request failed due to ' + status);
+//     //   }
+//     // });
+//
+//
+//
+//
+//
+//   }
+// }
