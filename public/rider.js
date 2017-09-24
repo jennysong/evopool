@@ -6,13 +6,14 @@ var geocoder;
 var possibleRoutes = [[]];
 var drawnRoutes = [];
 var selectedRoute = [];
-var directionsService;
+var DirectionsService;
 var routes = [];
-var service, latest_renderer;
+var routeStats = [];
+var DirectionsService, latest_renderer;
 
 function initAutocomplete() {
 
-    service = new google.maps.DirectionsService();
+    DirectionsService = new google.maps.DirectionsService();
     var nvan = {lat: 49.273376, lng: -123.103834};
     map = new google.maps.Map(document.getElementById('map'), {
         zoom: 14,
@@ -48,7 +49,7 @@ var render_direction_from_attrs = function(attrs, callback) {
   destination = new google.maps.LatLng(attrs.end.lat, attrs.end.lng)
   waypoints = attrs.waypoints.map(function(lat_lng) { return {location: new google.maps.LatLng(lat_lng[0], lat_lng[1]), stopover:false} })
 
-  service.route({ origin: origin, destination:  destination, waypoints: waypoints, 'travelMode': google.maps.DirectionsTravelMode.DRIVING},function(res,sts) {
+  DirectionsService.route({ origin: origin, destination:  destination, waypoints: waypoints, 'travelMode': google.maps.DirectionsTravelMode.DRIVING},function(res,sts) {
     if(callback instanceof Function) callback(res);
   })
 }
@@ -174,88 +175,63 @@ function sendPoints() {
           render_direction_from_attrs(trip_attrs.directions, function(result) {
             latest_renderer = render_direction(result);
           });
-        })
+        });
+
+        // Calculate optimal total travel for each route
+        routes.forEach(function(route, i) {
+          routeStats[i] = {};
+          routeStats[i].id = route.id;
+          routeStats[i].origin = new google.maps.LatLng(markers[0].getPosition().lat(), markers[0].getPosition().lng());
+          routeStats[i].destination = new google.maps.LatLng(markers[1].getPosition().lat(), markers[1].getPosition().lng());
+          routeStats[i].waypoints = [];
+          routeStats[i].waypoints.push({location: new google.maps.LatLng(route.origin_stop[0], route.origin_stop[1]), stopover:false});
+          routeStats[i].waypoints.push({location: new google.maps.LatLng(route.destination_stop[0], route.destination_stop[1]), stopover:false});
+
+          var dist = 0, dur = 0;
+          var request1 = {
+            origin: markers[0].getPosition().lat() + ", " + markers[0].getPosition().lng(),
+            destination: route.origin_stop[0] + ", " + route.origin_stop[1],
+            travelMode: google.maps.DirectionsTravelMode.WALKING
+          };
+          DirectionsService.route(request1, function(response1, status1) {
+            if ( status1 == google.maps.DirectionsStatus.OK ) {
+              console.log("res1, dist: " + response1.routes[0].legs[0].distance.value + ", dur: " + response1.routes[0].legs[0].duration.value);
+              dist += response1.routes[0].legs[0].distance.value;
+              dur += response1.routes[0].legs[0].duration.value;
+
+              var request2 = {
+                origin: route.origin_stop[0] + ", " + route.origin_stop[1],
+                destination: route.destination_stop[0] + ", " + route.destination_stop[1],
+                travelMode: google.maps.DirectionsTravelMode.DRIVING
+              };
+              DirectionsService.route(request2, function(response2, status2) {
+                if ( status2 == google.maps.DirectionsStatus.OK ) {
+                  console.log("res2, dist: " + response2.routes[0].legs[0].distance.value + ", dur: " + response2.routes[0].legs[0].duration.value);
+                  dist += response2.routes[0].legs[0].distance.value;
+                  dur += response2.routes[0].legs[0].duration.value;
+
+                  var request3 = {
+                    origin: route.destination_stop[0] + ", " + route.destination_stop[1],
+                    destination: markers[1].getPosition().lat() + ", " + markers[1].getPosition().lng(),
+                    travelMode: google.maps.DirectionsTravelMode.WALKING
+                  };
+                  DirectionsService.route(request3, function(response3, status3) {
+                    if ( status3 == google.maps.DirectionsStatus.OK ) {
+                      console.log("res3, dist: " + response3.routes[0].legs[0].distance.value + ", dur: " + response3.routes[0].legs[0].duration.value);
+                      dist += response3.routes[0].legs[0].distance.value;
+                      dur += response3.routes[0].legs[0].duration.value;
+                      routeStats[i].distance = dist;
+                      routeStats[i].duration = dur;
+                    }
+                  });
+                }
+              });
+            }
+          }); // request1
+        }); // routes
+
+        console.log(routeStats);
+
       }
     };
 }
-
-
-// var render_direction = function(direction_result) {
-//     renderer = new google.maps.DirectionsRenderer( {'draggable':true} );
-//     renderer.setMap(map);
-//     renderer.setDirections(direction_result);
-//     return renderer;
-// }
-
-// // route plotting
-// function displayPossibleRoutes() {
-//   // var directionsService;
-//   var directionsDisplay;
-//
-//   for (var i = 0; i < possibleRoutes.length; i++) {
-//     // directionsService = new google.maps.DirectionsService();
-//     directionsDisplay = new google.maps.DirectionsRenderer();
-//     directionsDisplay.setMap(map);
-//
-//     // plot all possible routes
-//     var waypts = [];
-//     possibleRoutes[i].slice(1, possibleRoutes[i].length-1).forEach(function(latlng) {
-//       waypts.push({
-//         location: new google.maps.LatLng(latlng.lat, latlng.lng),
-//         stopover: true
-//       });
-//     });
-//
-//     // for (var i=0; i<waypts.length; i++)
-//     //     console.log(waypts[i].location.lat());
-//       // console.log(possibleRoutes[i].length);
-//     // console.log("i: " + i + ", lat: " + possibleRoutes[i][0].lat + ", lng: " + possibleRoutes[i][0].lng);
-//
-//
-//       origin = new google.maps.LatLng(possibleRoutes[i][0].lat, possibleRoutes[i][0].lng);
-//       destination = new google.maps.LatLng(possibleRoutes[i][possibleRoutes[i].length-1].lat, possibleRoutes[i][possibleRoutes[i].length-1].lng);
-//
-//       console.log(possibleRoutes.length + " i: " + i + ", " + origin + " " + destination);
-//
-//       directionsService.route({ origin: origin, destination:  destination, waypoints: waypts, 'travelMode': google.maps.DirectionsTravelMode.DRIVING},function(res,sts) {
-//           renderer = new google.maps.DirectionsRenderer( {'draggable':true} );
-//           renderer.setMap(map);
-//           renderer.setDirections(res);
-//           console.log("i: " + i + ", " + origin + " " + destination);
-//       })
-//
-//
-//
-//
-//     // directionsService.route({
-//     //   origin: new google.maps.LatLng(possibleRoutes[i][0].lat, possibleRoutes[i][0].lng),
-//     //   destination: new google.maps.LatLng(possibleRoutes[i][possibleRoutes[i].length-1].lat, possibleRoutes[i][possibleRoutes[i].length-1].lng),
-//     //   waypoints: waypts,
-//     //   optimizeWaypoints: true,
-//     //   'travelMode': 'DRIVING'
-//     // }, function(response, status) {
-//     //   if (status === 'OK') {
-//     //     directionsDisplay.setDirections(response);
-//     //     // var route = response.routes[0];
-//     //     // var summaryPanel = document.getElementById('directions-panel');
-//     //     // summaryPanel.innerHTML = '';
-//     //     // For each route, display summary information.
-//     //     // for (var i = 0; i < route.legs.length; i++) {
-//     //     //   var routeSegment = i + 1;
-//     //     //   summaryPanel.innerHTML += '<b>Route Segment: ' + routeSegment +
-//     //     //       '</b><br>';
-//     //     //   summaryPanel.innerHTML += route.legs[i].start_address + ' to ';
-//     //     //   summaryPanel.innerHTML += route.legs[i].end_address + '<br>';
-//     //     //   summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>';
-//     //     // }
-//     //   } else {
-//     //     window.alert('Directions request failed due to ' + status);
-//     //   }
-//     // });
-//
-//
-//
-//
-//
-//   }
-// }
