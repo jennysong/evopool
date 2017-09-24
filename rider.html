@@ -1,1 +1,64 @@
-rider
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Evopool</title>
+    <style>
+        #map {
+            width: 100%;
+            height: 400px;
+        }
+    </style>
+    <script src="rider.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7YypByxy6nty8uskgT67k_QKoAsmiGes&libraries=places&callback=initAutocomplete"
+            async defer></script>
+    <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500">
+</head>
+
+<h1>Driver Page</h1>
+
+<body>
+    <p>This is drivers' page</p>
+    <h2>My Google Maps Demo</h2>
+
+    <h3></h3>
+
+    <div id="locationField">
+        <p>Pick up:</p>
+        <p>
+            <input id="autocompletePu" placeholder="Enter your address"
+                   onFocus="geolocate('pu')" type="text">
+            <button onclick="clickPoint('pu')">Click on map</button>
+            <button onclick="resetPoint('pu')">Reset</button>
+        </p>
+    </div>
+    <div id="locationField2">
+        <p>Destination:</p>
+        <p>
+            <input id="autocompleteDes" placeholder="Enter your address"
+                   onFocus="geolocate('des')" type="text">
+            <button onclick="clickPoint('des')">Click on map</button>
+            <button onclick="resetPoint('des')">Reset</button>
+        </p>
+    </div>
+    <div>
+        <p>Time of departure:</p>
+        <p>
+            <input id="time" type="time" name="time">
+        </p>
+    </div>
+    <div>
+        <p>Radius (meters)</p>
+        <p>
+            <input id="radius" type="text" name="radius">
+        </p>
+    </div>
+
+    <div id="floating-panel">
+        <button onclick="sendPoints();">Find Drivers!</button>
+    </div>
+
+    <div id="map"></div>
+</body>
+
+</html>
