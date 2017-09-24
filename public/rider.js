@@ -3,7 +3,6 @@ var autocompletePu, autocompleteDes;
 var markers = [];
 var map;
 var geocoder;
-var pudoPoints = [{}];
 var possibleRoutes = [[]];
 var drawnRoutes = [];
 var selectedRoute = [];
@@ -12,10 +11,10 @@ var routes = [];
 
 function initAutocomplete() {
 
-    var bcit = {lat: 49.283143, lng: -123.115088};
+    var nvan = {lat: 49.3303779, lng: -123.0638917};
     map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 17,
-        center: bcit
+        zoom: 14,
+        center: nvan
     });
 
     geocoder = new google.maps.Geocoder;
@@ -144,7 +143,7 @@ function setAddress(latlng, type) {
 
 
 function sendPoints() {
-  // TODO: send these points to the server
+  // send these points to the server
     console.log(markers[0].getPosition().lat() + " , " + markers[0].getPosition().lng());
     console.log(markers[1].getPosition().lat() + " , " + markers[1].getPosition().lng());
     console.log(document.getElementById('time').value);
@@ -156,20 +155,14 @@ function sendPoints() {
     var req = {"start_at" : document.getElementById('time').value.toString(), "from" : {"lat" : markers[0].getPosition().lat(), "lng" : markers[0].getPosition().lng()}, "to" : {"lat" : markers[1].getPosition().lat(), "lng" : markers[1].getPosition().lng()}};
     // console.log(JSON.stringify(req));
     xhttp.send(JSON.stringify(req));
-    // var response = JSON.parse(xhttp.responseText);
-    var response = xhttp.responseText;
-    // console.log(xhttp.responseText);
-
-  // TODO: request server to receive route and waypoints
-    // possibleRoutes =
-    // [[{lat: 49.2834511, lng: -123.1174435}, {lat: 50.2814521, lng: -123.1155755}, {lat: 51.2837886, lng: -123.116005}, {lat: 53.2803221, lng: -123.112195}],
-    // [{lat: 50.2834511, lng: -122.1174435}, {lat: 48.28112, lng: -124.1140618}, {lat: 47.2803221, lng: -121.112195}, {lat: 51.2778357, lng: -125.1088233}]];
-    // console.log(JSON.parse(response));
-
+    xhttp.onreadystatechange = function () {
+      if(xhttp.readyState === XMLHttpRequest.DONE && xhttp.status === 200) {
+        JSON.parse(xhttp.responseText).forEach(function(obj) {
+            routes.push(obj);
+        });
+      }
+    };
 }
-
-
-
 
 
 // var render_direction = function(direction_result) {
