@@ -1,54 +1,28 @@
 <html>
-  <head>
-    <title>Evopool</title>
-  </head>
-  <body>
-    <script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyBb4s9C_IS3Fe1YUWG_mDlRe1E7mfBuIb0&sensor=true"></script>
-    <div id="mappy" style="width:900px; height:550px;"></div>
-    <form action="/action_page.php">
-      From:
-      <input type="text" name="driverFrom">
-      To:
-      <input type="text" name="driverTo">
-      Time:
-      <input type="text" name="Time">
-      How many passengers:
-      <input type="text" name="passengers">
+	<head>
+		<title>Evopool</title>
+ 	</head>
+ 	<body>
+	 	<script src="driver.js"></script>		
+		<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyD7YypByxy6nty8uskgT67k_QKoAsmiGes&libraries=places&callback=initMap" async defer></script>
 
-      <input type="submit" value="Submit">
-    </form> 
+		<div id="mappy" style="width:900px; height:550px;"></div>
+		
+		<div>From:</div>
+		<input id="autocompleteFrom" placeholder="Enter your address" type="text">
+		<button onclick="clickPoint('origin')">Click on map</button>
+		
+		<div>To:</div>
+		<input id="autocompleteTo" placeholder="Enter your address" type="text">
+		<button onclick="clickPoint('destination')">Click on map</button>
+		
+		<div>Time:</div>
+		<input id="date" type="date" name="date">
+		<input id="time" type="time" name="time">
+		
+		<div>How many passengers:</div>
+		<input id="passengers" type="text" name="passengers">
 
-
-
-    <div style="width:900px; text-align:center; margin:0px auto 0px auto; margin-top:10px;">
-      <input type="button" value="Render" onClick="render_waypoints()"><br/>
-      <textarea id='result' style='width: 900px; height: 200px;'></textarea>
-    </div>
-    <script type='text/javascript'>
-      var map, renderer, service;
-      map = new google.maps.Map( document.getElementById('mappy'), {'zoom':12, 'mapTypeId': google.maps.MapTypeId.ROADMAP, 'center': new google.maps.LatLng(49.2796502,-123.1116371,15) })
-   
-      renderer = new google.maps.DirectionsRenderer( {'draggable':true} );
-      renderer.setMap(map);
-      service = new google.maps.DirectionsService();
-      origin = new google.maps.LatLng(49.2488091, -122.9805104)
-      destination = new google.maps.LatLng(49.236996, -122.9541614)
-      service.route({ 'origin': origin, 'destination':  destination, 'travelMode': google.maps.DirectionsTravelMode.DRIVING},function(res,sts) {
-        if(sts=='OK')renderer.setDirections(res);
-      })
-
-
-      function render_waypoints() {
-        var w=[],wp;
-        var data = {};
-        var rleg = renderer.directions.routes[0].legs[0];
-        data.start = {'lat': rleg.start_location.lat(), 'lng':rleg.start_location.lng()}
-        data.end = {'lat': rleg.end_location.lat(), 'lng':rleg.end_location.lng()}
-        var wp = rleg.via_waypoints
-        for(var i=0;i<wp.length;i++)w[i] = [wp[i].lat(),wp[i].lng()]
-        data.waypoints = w;
-        document.getElementById('result').value = JSON.stringify(data)
-      }
-    </script>
+		<button onclick="sendData()">Submit</button>
   </body>
 </html>
